@@ -1,0 +1,33 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="text-center justify-content-center">
+        <form class="form-check rounded border border-primary" action="http://localhost:8080/sendemail" method="POST">
+            <div class="form-group">
+                <label> Name: </label>
+                <input type="text" class="form-control border-secondary" name="name" />
+            </div>
+            <div class="form-group">
+                <label> Email: </label>
+                <input type="text" class="form-control border-secondary" name="email" />
+            </div>
+            <div class="form-group">
+                <label> Message: </label>
+                <input type="text" class="form-control border-secondary" name="message" />
+            </div>
+            <div>
+                <input type="submit" class="btn btn-success" value="submit" />
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

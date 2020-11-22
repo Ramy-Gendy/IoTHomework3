@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+            }
+            .container {
+                display: flex;
+                height: 40%;
+                width: 20%;
+                border-radius: 50%;
+                background-color: black;
+            }
+            .center {
+                margin: auto;
+            }
+            #arrow {
+                font-size: 200;
+                color: grey;
+                transform: rotate(0deg);
+            }
+        </style>    
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+            window.onload = function() {
+                function getAngle(source, destination) {
+                    console.log(current);
+                    console.log(destination);
+                    //calculating angle between two coordinates
+                    var longtitudeDifference = destination[1] - source[1];
+                    var angle = Math.atan2(Math.sin(longtitudeDifference) * Math.cos(destination[0]), ((Math.cos(source[0]) * Math.sin(destination[0])) - (Math.sin(source[0]) * Math.cos(destination[0]) * Math.cos(longtitudeDifference))));
+                    return (angle * 180 / Math.PI); 
+                }
+                getLocation();
+                var updateLocationInterval = window.setInterval(getLocation, 1000); 
+                
+                function getLocation() {
+                    $.ajax({
+                        type: "GET",
+                        url: "/map",
+                    }).done(function(response) {
+                        console.log("success");
+                        console.log(response);
+                        if (response != '{}') {
+                            $('#arrow').css('color', 'white');
+                            const parsedResp = $.parseJSON(response);
+                            const source = [parseFloat(parsedResp.sourceLat), parseFloat(parsedResp.sourceLng)];
+                            const destination = [parseFloat(parsedResp.destLat), parseFloat(parsedResp.destLng)];
+                            angle = getAngle(source, destination);
+                            console.log(angle);
+                            $('#arrow').css('transform', 'rotate(' + (angle-90) + 'deg)');
+                        }
+                    });
+                }
+            }
+        </script>
+        <link rel="icon" href="data:,">
+        <title> My Compass </title>
+    </head>
+    <body>
+        <div class="container center">
+            <div class="center" id="arrow"> > </div>
+        </div>
+    </body>
+</html>
