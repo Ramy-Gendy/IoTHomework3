@@ -1,12 +1,25 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+        integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
-    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=IudPx1KhI7KYBiGbISQbTLJpGkv7AOn8"></script>
+    <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
     <script
-        src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-routing.js?key=IudPx1KhI7KYBiGbISQbTLJpGkv7AOn8"></script>
+        src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-routing.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
 
     <script type="text/javascript">
         window.onload = function () {
@@ -59,7 +72,7 @@
             var sendInterval = window.setInterval(sendToCompass, 1000);
 
             function getNewLocation(e) {
-                if (clicked) { 
+                if (clicked) {
                     map.removeLayer(layer);
                     direction = MQ.routing.directions();
                     layer = MQ.routing.routeLayer({
@@ -71,7 +84,7 @@
                 location = [e.latitude, e.longitude];
                 if (clickedLocation == undefined)
                     clickedLocation = [(location[0] + 0.00005), location[1]];
-                direction.route({ 
+                direction.route({
                     locations: [
                         location[0] + ',' + location[1],
                         clickedLocation[0] + ',' + clickedLocation[1],
@@ -103,7 +116,32 @@
 </head>
 
 <body>
+    <div>
+        <nav class="navbar navbar-light bg-light">
+            <form class="form-inline" action="/logout" method="GET">
+                <h2> <span class="badge badge-success" id="usernameText"></span> </h2>  
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout</button>
+                <h2> <span class="badge badge-default" id="viewsText"></span> </h2>  
+            </form>
+        </nav>
+    </div>
     <div id='map' style='width: 100%; height:100%;'></div>
+    <script>
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userParam = urlParams.get('username');
+            if (userParam) {
+                $('#usernameText').text(userParam);
+            }
+            const viewsParam = urlParams.get('page_views');
+            if (viewsParam == '1') {
+                $('#viewsText').text('Welcome to this page for the first time!');
+            }
+            else {
+                $('#viewsText').text('You visited this page ' + viewsParam + ' times');
+            }
+        })
+    </script>
 </body>
 
 </html>

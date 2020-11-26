@@ -2,32 +2,107 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+        integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://jqueryvalidation.org/files/demo/site-demos.css">
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 </head>
 
 <body>
-    <div class="text-center justify-content-center">
-        <form class="form-check rounded border border-primary" action="http://localhost:8080/sendemail" method="POST">
-            <div class="form-group">
-                <label> Name: </label>
-                <input type="text" class="form-control border-secondary" name="name" />
-            </div>
-            <div class="form-group">
-                <label> Email: </label>
-                <input type="text" class="form-control border-secondary" name="email" />
-            </div>
-            <div class="form-group">
-                <label> Message: </label>
-                <input type="text" class="form-control border-secondary" name="message" />
-            </div>
-            <div>
-                <input type="submit" class="btn btn-success" value="submit" />
+    <div class="justify-content-center">
+        <form class="form-check rounded" action="/reg" method="POST" id="form">
+            <div class="col">
+                <div class="alert alert-success" role="alert" id="registerAlert">
+                    <p style="text-align: center;">User Already Exists! Login or choose another username</p>
+                </div>
+                <div class="col-7">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" placeholder="Enter username here" minlength="8"
+                        name="username" required>
+                    <br>
+                </div>
+                <div class="col-7">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" placeholder="password" name="password"
+                        minlength="8" required>
+                    <br>
+                </div>
+                <div class="col-7">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" class="form-control" placeholder="confirm password" minlength="8"
+                        id="confirm_password" name="confirm_password" required>
+                    <br>
+                </div>
+                <div class="col-7">
+                    <input type="submit" class="btn btn-success" value="Register" />
+                </div>
             </div>
         </form>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            var $submitBtn = $("#form input[type='submit']");
+            var $passwordBox = $("#password");
+            var $confirmBox = $("#confirm_password");
+            var $errorMsg = $('<span id="error_msg">Passwords do not match.</span>');
+
+            // This is incase the user hits refresh - some browsers will maintain the disabled state of the button.
+            $submitBtn.removeAttr("disabled");
+
+            function checkMatchingPasswords() {
+                if ($confirmBox.val() != "" && $passwordBox.val() != "") {
+                    if ($confirmBox.val() != $passwordBox.val()) {
+                        $submitBtn.attr("disabled", "disabled");
+                        $errorMsg.insertAfter($confirmBox);
+                    }
+                }
+            }
+
+            function resetPasswordError() {
+                $submitBtn.removeAttr("disabled");
+                var $errorCont = $("#error_msg");
+                if ($errorCont.length > 0) {
+                    $errorCont.remove();
+                }
+            }
+
+
+            $("#confirm_password, #password")
+                .on("keydown", function (e) {
+                    /* only check when the tab or enter keys are pressed
+                     * to prevent the method from being called needlessly  */
+                    if (e.keyCode == 13 || e.keyCode == 9) {
+                        checkMatchingPasswords();
+                    }
+                })
+                .on("blur", function () {
+                    // also check when the element looses focus (clicks somewhere else)
+                    checkMatchingPasswords();
+                })
+                .on("focus", function () {
+                    // reset the error message when they go to make a change
+                    resetPasswordError();
+                })
+            $('#registerAlert').hide();
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('error');
+            if (myParam == "Incorrect_Credential") {
+                $('#registerAlert').show();
+            }
+        });
+    </script>
 </body>
 
 </html>
