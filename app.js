@@ -7,10 +7,7 @@ var bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 var MongoStore = require('connect-mongo')(session);
 
-
 var client = mqtt.connect('ws://localhost:8883')
-
-
 
 var app = express();
 
@@ -65,7 +62,7 @@ client.on('connect', function () {
                 coordinates = JSON.parse(coordinates);
                 var sourceCoordinates = "Lat: " + coordinates['sourceLat'].toString() + " Lng:  " + coordinates['sourceLng'].toString();
                 var destCoordinates = "Lat: " + coordinates['destLat'].toString() + " Lng:  " + coordinates['destLng'].toString();
-                User.updateOne({name: splitMessage[1]}, {source: sourceCoordinates, destination: destCoordinates }, function (err, user) {
+                User.updateOne({ name: splitMessage[1] }, { source: sourceCoordinates, destination: destCoordinates }, function (err, user) {
                     if (err) {
                         console.log('Failure');
                     }
