@@ -180,7 +180,7 @@ app.get('/compass', function (req,res) {
 
 app.get('/logout', function (req, res) {
     req.session.destroy();
-    res.sendFile(__dirname + '/');
+    res.redirect('/');
 })
 
 app.listen(app.get('port'), function () {
