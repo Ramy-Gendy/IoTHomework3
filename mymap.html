@@ -15,6 +15,7 @@
         crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
     <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
@@ -22,8 +23,35 @@
         src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-routing.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
 
     <script type="text/javascript">
+        function uuidv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        var client;
+        var topic;
+        function Connect() {
+            const host = '127.0.0.1';
+            topic = "coe457/Homework3";
+            const port = 8883;
+            client = new Paho.MQTT.Client(host, port, "clientID_" + parseInt(Math.random() * 100, 10));
+
+            client.onConnectionLost = function (responseObject) {
+                console.log("connection lost: " + responseObject.errorMessage);
+            };
+
+            client.onMessageArrived = function (message) {
+                console.log(message.destinationName, ' -- ', message.payloadString);
+            };
+        }
+
+
+
         window.onload = function () {
 
+
+            Connect();
             var map;
             var direction;
             var clicked;
@@ -95,6 +123,7 @@
         }
 
         function sendToCompass(clickedLocation, location) {
+
             console.log(clickedLocation);
             if (clickedLocation != undefined) {
                 var locationToSend = {
@@ -103,12 +132,26 @@
                     destLat: clickedLocation[0],
                     destLng: clickedLocation[1],
                 }
-                $.ajax({
-                    type: "POST",
-                    data: locationToSend
-                }).done(function (response) {
-                    console.log("sent location");
-                });
+                try {
+                    client.connect({
+                        onSuccess: function () {
+                            console.log("mqtt connected");
+                            locationToSend = JSON.stringify(locationToSend);
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const userParam = urlParams.get('username');
+                            message = new Paho.MQTT.Message(locationToSend + " " + userParam);
+                            message.destinationName = "coe457/Homework3";
+                            client.send(message);
+                            client.disconnect();
+                        },
+                        onFailure: function (message) {
+                            console.log("Connection failed: " + message.errorMessage);
+                        }
+                    });
+                }
+                catch (err) {
+                    console.log(err.message);
+                }
             }
         }
     </script>
@@ -119,9 +162,9 @@
     <div>
         <nav class="navbar navbar-light bg-light">
             <form class="form-inline" action="/logout" method="GET">
-                <h2> <span class="badge badge-success" id="usernameText"></span> </h2>  
+                <h2> <span class="badge badge-success" id="usernameText"></span> </h2>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout</button>
-                <h2> <span class="badge badge-default" id="viewsText"></span> </h2>  
+                <h2> <span class="badge badge-default" id="viewsText"></span> </h2>
             </form>
         </nav>
     </div>
