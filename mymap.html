@@ -18,6 +18,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/cookieconsent.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
     <script src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-map.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
     <script
         src="https://www.mapquestapi.com/sdk/leaflet/v2.2/mq-routing.js?key=vQNddt4XzAOcnQMua2toVxqdpkHrHFPu"></script>
@@ -42,20 +44,71 @@
 
 
 
-        window.onload = function () {
+        window.onload = async function () {
+            const cookieStorage = {
+                getItem: (key) => {
+                    const cookies = document.cookie
+                        .split(';')
+                        .map(cookie => cookie.split('='))
+                        .reduce((acc, [key, value]) => ({ ...acc, [key.trim()]: value}), {});
+                    return cookies[key];
+                },
+                setItem: (key, value) => {
+                    document.cookie = `${key}=${value}`;
+                }
+            };
+            const storageType = cookieStorage;
+            const propertyName = "hw3_consent";
 
+            const showPopUp = () => !storageType.getItem(propertyName);
+            const saveProperty = () => storageType.setItem(propertyName, true);
 
+            if (showPopUp(storageType)) {
+                const consent = confirm('This site uses cookies. Click yes if you allow this website to use cookies, no if you do not.')
+                if (consent) {
+                    saveProperty();
+                }
+            }
+
+            // window.cookieconsent.initialise({
+            //     container: document.getElementById("cookieconsent"),
+            //     palette: {
+            //         popup: { background: "#1aa3ff" },
+            //         button: { background: "#e0e0e0" },
+            //     },
+            //     revokable: true,
+            //     onStatusChange: function (status) {
+            //         console.log(this.hasConsented() ?
+            //             'enable cookies' : 'disable cookies');
+            //     },
+            //     "position": "bottom-left",
+            //     "theme": "classic",
+            //     "domain": "https://i71n4.csb.app/",
+            //     "secure": true,
+            //     "content": {
+            //         "header": 'Cookies used on the website!',
+            //         "message": 'This website uses cookies to improve your experience.',
+            //         "dismiss": 'Got it!',
+            //         "allow": 'Allow cookies',
+            //         "deny": 'Decline',
+            //         "link": 'Learn more',
+            //         "href": 'https://www.cookiesandyou.com',
+            //         "close": '&#x274c;',
+            //         "policy": 'Cookie Policy',
+            //         "target": '_blank',
+            //     }
+            // });
             Connect();
             var map;
             var direction;
             var clicked;
-            var location;
-            var clickedLocation = {};
+            var location = [25.2046, 75.4977];
+            var clickedLocation = [24.40338, 54.54677];
             var currentMark;
 
             map = L.map('map', {
                 layers: MQ.mapLayer(),
-                center: [25.196099, 55.281245],
+                center: [24.196099, 55.281245],
                 zoom: 10
             });
 
@@ -156,9 +209,9 @@
     <div>
         <nav class="navbar navbar-light bg-light">
             <form class="form-inline" action="/logout" method="GET">
-                <h2> <span class="badge badge-success" id="usernameText"></span> </h2>
+                <h2> <span class="badge" id="usernameText"></span> </h2>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout</button>
-                <h2> <span class="badge badge-default" id="viewsText"></span> </h2>
+                <h2> <span class="badge" id="timeText"></span> </h2>
             </form>
         </nav>
     </div>
@@ -168,14 +221,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const userParam = urlParams.get('username');
             if (userParam) {
-                $('#usernameText').text(userParam);
+                $('#usernameText').text('Welcome Back, ' + userParam + '!');
             }
-            const viewsParam = urlParams.get('page_views');
-            if (viewsParam == '1') {
-                $('#viewsText').text('Welcome to this page for the first time!');
-            }
-            else {
-                $('#viewsText').text('You visited this page ' + viewsParam + ' times');
+            const timeParam = urlParams.get('time');
+            if (timeParam) {
+                $('#timeText').text('Last time visisted: ' + timeParam);
             }
         })
     </script>

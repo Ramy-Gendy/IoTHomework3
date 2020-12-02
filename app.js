@@ -21,7 +21,8 @@ app.use(session({
     store: new MongoStore({ mongooseConnection: mongoose.connection }),
     cookie: {
         maxAge: (1000 * 60 * 60 * 24 * 30)
-    }
+    },
+    unset: "destroy"
 }));
 
 mongoose.connect('mongodb://localhost:27017/users', { useNewUrlParser: true, useUnifiedTopology: true });
@@ -55,21 +56,22 @@ client.on('connect', function () {
         else {
             console.log('Success');
             client.on('message', function (topic, message) {
-                console.log(topic.toString());
-                console.log(message.toString());
                 var splitMessage = message.toString().split(' ');
                 var coordinates = splitMessage[0].toString().split(',');
                 coordinates = JSON.parse(coordinates);
                 var sourceCoordinates = "Lat: " + coordinates['sourceLat'].toString() + " Lng:  " + coordinates['sourceLng'].toString();
-                var destCoordinates = "Lat: " + coordinates['destLat'].toString() + " Lng:  " + coordinates['destLng'].toString();
-                User.updateOne({ name: splitMessage[1] }, { source: sourceCoordinates, destination: destCoordinates }, function (err, user) {
-                    if (err) {
-                        console.log('Failure');
-                    }
-                    else {
-                        console.log(user);
-                    }
-                })
+                if (sourceCoordinates) {
+                    var destCoordinates = "Lat: " + coordinates['destLat'].toString() + " Lng:  " + coordinates['destLng'].toString();
+                    User.updateOne({ name: splitMessage[1] }, { source: sourceCoordinates, destination: destCoordinates }, function (err, user) {
+                        if (err) {
+                            console.log('Failure');
+                        }
+                        else {
+                            console.log("Location Updated");
+                        }
+                    })
+                }
+
             })
         }
     })
@@ -83,11 +85,8 @@ app.use(cookieParser());
 app.get('/', async function (req, res) {
     if (req.session.isLoggedIn) {
         let user = await User.findOne({ _id: req.session.userId });
-
         if (user) {
-            let username = user.name;
-            let userViews = req.session.page_views;
-            res.redirect('/map?username=' + encodeURIComponent(req.session.username) + '&page_views=' + encodeURIComponent(userViews));
+            res.redirect('/map?username=' + encodeURIComponent(req.session.username) + '&time=' + encodeURIComponent(new Date().toString()));
         }
         else {
             res.sendFile(__dirname + '/index.html');
@@ -124,7 +123,6 @@ app.post('/reg', urlencodedParser, async function (req, res) {
 });
 
 app.post('/map', urlencodedParser, async function (req, res) {
-
     let user = await User.findOne({ name: req.body.username });
     if (!user) {
         res.redirect('/?error=' + encodeURIComponent('Incorrect_Credential'));
@@ -139,24 +137,44 @@ app.post('/map', urlencodedParser, async function (req, res) {
     }
     else {
         req.session.userId = user._id;
-        if (req.session.page_views) {
-            req.session.page_views++;
-        }
-        else {
-            req.session.page_views = 1;
-        }
         req.session.isLoggedIn = true;
+        if (req.body.checkBox == 'on') {
+            req.session.remember_me = true;
+        }
+        if (req.session.lastVisited) {
+            req.session.lastVisited = req.session.currentVisited;
+            req.session.currentVisited = new Date().toString();
+        } 
+        else {
+            req.session.lastVisited = new Date().toString();
+            req.session.currentVisited = req.session.lastVisited;
+        }
         req.session.username = user.name;
-        res.redirect('/map?username=' + encodeURIComponent(user.name) + "&page_views=" + encodeURIComponent(req.session.page_views));
+        res.redirect('/map?username=' + encodeURIComponent(user.name) + ' &time=' + encodeURIComponent(req.session.lastVisited));
     }
 });
 
 app.get('/map', function (req, res) {
-    if (req.session.userId) {
+    if (req.session.isLoggedIn) {
+        if (!req.session.remember_me) {
+            req.session.isLoggedIn = false;
+        }
         res.sendFile(__dirname + '/mymap.html');
     }
     else {
-        res.sendFile(__dirname + '/index.html');
+        res.redirect('/');
+    }
+})
+
+app.get('/compass', function (req,res) {
+    if (req.session.isLoggedIn) {
+        if (!req.session.remember_me) {
+            req.session.isLoggedIn = false;
+        }
+        res.sendFile(__dirname + '/mycompass.html');
+    }
+    else {
+        res.redirect('/');
     }
 })
 
